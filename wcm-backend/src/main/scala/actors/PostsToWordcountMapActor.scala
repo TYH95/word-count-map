@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 
 import scala.collection.MapView
 import models.WpPost
+import actors.ClientConnectionActor
 
 object PostsToWordcountMapActor {
 
@@ -11,6 +12,9 @@ object PostsToWordcountMapActor {
 
   def apply(): Behavior[TransformToMap] =
     Behaviors.setup { context =>
+      val deliverer =
+        context.spawn(ClientConnectionActor(), "deliverer")
+
       Behaviors.receiveMessage { case TransformToMap(posts) =>
         var mergedMap: Map[String, Int] = Map[String, Int]()
 
@@ -28,7 +32,7 @@ object PostsToWordcountMapActor {
           post
         }
 
-        println(mergedMap.view.mapValues((x) => x).toMap)
+        deliverer ! ClientConnectionActor.sendMessage(mergedMap.view.mapValues((x) => x).toMap.toString())
         Behaviors.same
 
       }
