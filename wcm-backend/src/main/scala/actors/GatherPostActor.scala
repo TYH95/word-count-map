@@ -23,7 +23,7 @@ object GatherPostActor {
   def apply(): Behavior[GatherPost] =
     Behaviors.setup { context =>
       val transformer =
-        context.spawn(StringToWordcountMapActor(), "transformer")
+        context.spawn(PostsToWordcountMapActor(), "transformer")
       implicit val postObjectFormat: RootJsonFormat[WpPostObject] = jsonFormat1(WpPostObject.apply)
       implicit val postFormat: RootJsonFormat[WpPost] = jsonFormat3(WpPost.apply)
       implicit val system = context.system
@@ -47,6 +47,7 @@ object GatherPostActor {
                 _.get match {
 
                   case posts: Array[WpPost] =>
+                    transformer ! PostsToWordcountMapActor.TransformToMap(posts)
                     println("success")
                 }
 
