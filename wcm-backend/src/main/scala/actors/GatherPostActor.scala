@@ -19,7 +19,7 @@ import akka.actor.typed.ActorRef
 final val POST_URL = "https://thekey.academy/wp-json/wp/v2/posts"
 
 abstract class BaseSourceActor {}
-
+//Actor who can fetch blog posts from a Wordpress Server and parse it into WpPost Model
 object GatherPostActor extends BaseSourceActor {
   sealed trait SourceCommand
 

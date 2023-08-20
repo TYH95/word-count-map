@@ -10,16 +10,25 @@ import scala.util.{Failure, Success}
 import akka.util.Timeout
 import scala.concurrent.duration._
 
+// Trait for the WordCountMap Model.
+// Includes also some functions to sanatize Strings.
 trait WordCountMap {
 
   // Remove all HTML Tags from given String
   // TODO: Find better solution then regex
   def stripHtmlTags(str: String): String = {
-    return str.replaceAll("(<([^>]+)>)", " ").replaceAll("""(&[\p{Digit}];)""", "").replaceAll("\\s+", " ").trim()
+    return str
+      .replaceAll("(<([^>]+)>)", " ")
+      .replaceAll("""(&[\p{Digit}];)""", "")
+      .replaceAll("\\s+", " ")
+      .trim()
   }
 
   def removePunctuation(str: String): String = {
-    return str.replaceAll("""[\p{Punct}&&[^-]]""", "").replaceAll("""[”“]""", "").trim()
+    return str
+      .replaceAll("""[\p{Punct}&&[^-]]""", "")
+      .replaceAll("""[”“]""", "")
+      .trim()
   }
 
   // Counts each word in the post contents and returns the result als Map
@@ -47,6 +56,7 @@ trait WordCountMap {
   }
 }
 
+// Actor to transform the received posts and to provide an interface to the fetch post logic.
 object WordcountMapActor extends WordCountMap {
   sealed trait WordcountMapCommand
 

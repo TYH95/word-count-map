@@ -6,6 +6,8 @@ import akka.NotUsed
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Sink, Source, SourceQueueWithComplete}
+//Manages all ClientConnections and provides and Actor Interface to interact with them.
+//Based on https://github.com/JannikArndt/simple-akka-websocket-server-push/blob/master/src/main/scala/WebSocket.scala
 object ClientConnectionActor {
 
   sealed trait ConnectionCommand
@@ -16,7 +18,9 @@ object ClientConnectionActor {
 
   private var controller: ActorRef[ControlActor.ControlCommand] = null
 
-  def apply(controller: ActorRef[ControlActor.ControlCommand]): Behavior[ConnectionCommand] =
+  def apply(
+      controller: ActorRef[ControlActor.ControlCommand]
+  ): Behavior[ConnectionCommand] =
     Behaviors.setup { context =>
       this.controller = controller
       Behaviors.receiveMessage { case sendMessage(msg) =>

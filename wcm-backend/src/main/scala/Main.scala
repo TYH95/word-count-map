@@ -17,21 +17,7 @@ import akka.stream.scaladsl.Sink
 import akka.http.scaladsl.model.HttpMethods.GET
 import actors.ClientConnectionActor
 
-
 object WordCountMap extends App {
-
-  val posts_stub = Array(
-    WpPost(
-      0,
-      WpPostObject(""),
-      WpPostObject("<p> Ein einfaches Beispiel mit einem Beispiel </p>")
-    ),
-    WpPost(
-      1,
-      WpPostObject(""),
-      WpPostObject("<p> Ein einfaches Beispiel mit einem Beispiel </p>")
-    )
-  )
 
   implicit val system: ActorSystem[ControlActor.ControlCommand] =
     ActorSystem(ControlActor(), "gather")
@@ -48,15 +34,11 @@ object WordCountMap extends App {
 
   system ! ControlActor.Start()
 
-  println(s"Server online at http://localhost:8080/")
-  println(s"Press RETURN to stop actorsystem")
-  StdIn.readLine()
-
-  system ! ControlActor.Stop()
-
+  println(s"Server online at http://localhost:8080/ws")
   println(s"Press RETURN to stop server")
   StdIn.readLine()
 
+  system ! ControlActor.Stop()
 
   bindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port

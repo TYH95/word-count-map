@@ -10,6 +10,7 @@ import DefaultJsonProtocol._
 import scala.concurrent.duration._
 import akka.actor.typed.ActorRef
 
+//Coordinates between getting the WordCountMap periodicly and sending it to the clients.
 object ControlActor {
 
   sealed trait ControlCommand
@@ -24,10 +25,10 @@ object ControlActor {
 
   private case object Interval extends ControlCommand
 
-  //Simple Stateholding of previous wordCountMap
+  // Simple Stateholding of previous wordCountMap
   private var wordCountMapState: Map[String, Int] = Map[String, Int]()
 
-  private val FETCH_INTERVAL: FiniteDuration = 30.second
+  private val FETCH_INTERVAL: FiniteDuration = 60.second
 
   private var deliverer: ActorRef[ClientConnectionActor.ConnectionCommand] =
     null
