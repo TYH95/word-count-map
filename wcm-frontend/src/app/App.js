@@ -1,23 +1,13 @@
 import "./App.css";
-import logo from "@assets/logo.svg"
+import useWebSocket from "@components/useWebsocket";
+import WordCountMapViewer from "@components/WordCountMapViewer";
 
 function App() {
+  const connectionStatus = useWebSocket('ws:127.0.0.1:8080/ws')
+  console.log(connectionStatus)
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <WordCountMapViewer></WordCountMapViewer>
     </div>
   );
 }
