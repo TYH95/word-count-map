@@ -10,7 +10,7 @@ import scala.util.{Failure, Success}
 import akka.util.Timeout
 import scala.concurrent.duration._
 
-abstract class BaseWordcoundMapActor {
+trait WordCountMap {
 
   // Remove all HTML Tags from given String
   def stripHtmlTags(str: String): String = {
@@ -42,7 +42,7 @@ abstract class BaseWordcoundMapActor {
   }
 }
 
-object WordcountMapActor extends BaseWordcoundMapActor {
+object WordcountMapActor extends WordCountMap {
   sealed trait WordcountMapCommand
 
   final case class GetWordcountMap() extends WordcountMapCommand

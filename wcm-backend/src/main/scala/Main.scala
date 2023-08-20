@@ -46,26 +46,19 @@ object WordCountMap extends App {
   val bindingFuture =
     Http().newServerAt("localhost", 8080).bind(route)
 
-
-  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-  StdIn.readLine()
-
   system ! ControlActor.Start()
 
+  println(s"Server online at http://localhost:8080/")
+  println(s"Press RETURN to stop actorsystem")
   StdIn.readLine()
+
+  system ! ControlActor.Stop()
+
+  println(s"Press RETURN to stop server")
+  StdIn.readLine()
+
 
   bindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
-
-  // system ! GatherPostActor.GatherPost(POST_URL)
-  /*
-  val posts_stub = Array(WpPost(0,WpPostObject(""),WpPostObject("<p> Ein einfaches Beispiel mit einem Beispiel </p>")), WpPost(1,WpPostObject(""),WpPostObject("<p> Ein einfaches Beispiel mit einem Beispiel </p>")))
-
-  val system: ActorSystem[PostsToWordcountMapActor.TransformToMap] =
-    ActorSystem(PostsToWordcountMapActor(), "gather")
-
-  system ! PostsToWordcountMapActor.TransformToMap(posts_stub)
-   */
-
 }

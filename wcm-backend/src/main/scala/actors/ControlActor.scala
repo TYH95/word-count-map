@@ -4,47 +4,71 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 
 import scala.collection.MapView
-import models.WpPost
 import actors.ClientConnectionActor
 import spray.json._
 import DefaultJsonProtocol._
+import scala.concurrent.duration._
+import akka.actor.typed.ActorRef
 
-abstract class BaseControlActor {}
+object ControlActor {
 
-object ControlActor extends BaseControlActor {
   sealed trait ControlCommand
 
   final case class Start() extends ControlCommand
 
+  final case class Stop() extends ControlCommand
   final case class ReceiveWordCountMap(wcm: Map[String, Int])
       extends ControlCommand
 
+  private case object Interval extends ControlCommand
+
+  private val FETCH_INTERVAL = 30.second
+
+  private var deliverer: ActorRef[ClientConnectionActor.ConnectionCommand] = null
+
+  private var gatherer: ActorRef[GatherPostActor.SourceCommand] = null
+
+  private var wordCountMapActor: ActorRef[WordcountMapActor.WordcountMapCommand] = null
+
   def apply(): Behavior[ControlCommand] =
     Behaviors.setup { context =>
-      val deliverer =
+      deliverer =
         context.spawn(ClientConnectionActor(context.self), "deliverer")
-      val gatherer = context.spawn(GatherPostActor(), "gatherer")
-      val wordCountMapActor = context.spawn(
+      gatherer = context.spawn(GatherPostActor(), "gatherer")
+      wordCountMapActor = context.spawn(
         WordcountMapActor(
           gatherer,
           context.self
         ),
         "wcm-model"
       )
+      idle()
+    }
 
-      Behaviors.receiveMessage {
-        case Start() =>
+  private def idle(): Behavior[ControlCommand] = Behaviors.receiveMessage {
+    case Start() =>
+      inInterval()
+    case _ =>
+      Behaviors.unhandled
+  }
+
+  private def inInterval(): Behavior[ControlCommand] =
+    Behaviors.withTimers[ControlCommand] { timers =>
+
+      timers.startSingleTimer(Interval, FETCH_INTERVAL)
+      Behaviors.receiveMessagePartial {
+        case Interval =>
           wordCountMapActor ! WordcountMapActor.GetWordcountMap()
           Behaviors.same
-
         case ReceiveWordCountMap(wcm) =>
-          println("Map Received")
           deliverer ! ClientConnectionActor.sendMessage(mapToJson(wcm))
-          Behaviors.same
+          inInterval()
+        case Stop() =>
+          idle()
       }
     }
 
-  def mapToJson(wcm: Map[String, Int]): String = {
-      return wcm.toJson.compactPrint
+  private def mapToJson(wcm: Map[String, Int]): String = {
+    return wcm.toJson.compactPrint
   }
 }
