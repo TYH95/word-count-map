@@ -5,8 +5,6 @@ import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import WordCountMapTable from "./WordCountMapTable";
 
-
-
 const WordCountMapViewer = () => {
     const wordCountMap = useSelector(selectWordCountMap)
     const [mapToDisplay, setMapToDisplay] = useState({})
@@ -39,7 +37,7 @@ const WordCountMapViewer = () => {
 
 
     return <>
-        <TextField label="Search" variant="outlined" onChange={(e) => setSearch(e.target.value)} />
+        <TextField label="Search" variant="outlined" onChange={(e) => setSearch(e.target.value)} style={{margin: "16px 0px"}}/>
         <TableContainer>
             <Table stickyHeader aria-label="sticky table">
                 <TableHead>
