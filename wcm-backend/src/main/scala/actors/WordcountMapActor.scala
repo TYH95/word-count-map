@@ -13,8 +13,9 @@ import scala.concurrent.duration._
 trait WordCountMap {
 
   // Remove all HTML Tags from given String
+  // TODO: Find better solution then regex
   def stripHtmlTags(str: String): String = {
-    return str.replaceAll("""<(?!\/?a(?=>|\s.*>))\/?.*?>""", "")
+    return str.replaceAll("(<([^>]+)>)", "").replaceAll("\\s+", " ").trim()
   }
 
   // Counts each word in the post contents and returns the result als Map
