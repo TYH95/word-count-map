@@ -4,11 +4,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import scala.io.StdIn
 
-import actors.GatherPostActor
-import actors.PostsToWordcountMapActor
+import actors.ControlActor
 import models.WpPostObject
 import models.WpPost
-import models.WebSocket
 import scala.concurrent.ExecutionContextExecutor
 import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.model.ws.TextMessage
@@ -17,8 +15,8 @@ import akka.http.scaladsl.model.ws.BinaryMessage
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Sink
 import akka.http.scaladsl.model.HttpMethods.GET
+import actors.ClientConnectionActor
 
-final val POST_URL = "https://thekey.academy/wp-json/wp/v2/posts"
 
 object WordCountMap extends App {
 
@@ -35,23 +33,24 @@ object WordCountMap extends App {
     )
   )
 
-  implicit val system: ActorSystem[PostsToWordcountMapActor.TransformToMap] =
-    ActorSystem(PostsToWordcountMapActor(), "gather")
+  implicit val system: ActorSystem[ControlActor.ControlCommand] =
+    ActorSystem(ControlActor(), "gather")
 
   implicit val executionContext: ExecutionContextExecutor =
     system.executionContext
 
   val route = path("ws") {
-    handleWebSocketMessages(WebSocket.listen())
+    handleWebSocketMessages(ClientConnectionActor.listen())
   }
 
   val bindingFuture =
     Http().newServerAt("localhost", 8080).bind(route)
 
+
   println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
   StdIn.readLine()
 
-  system ! PostsToWordcountMapActor.TransformToMap(posts_stub)
+  system ! ControlActor.Start()
 
   StdIn.readLine()
 
