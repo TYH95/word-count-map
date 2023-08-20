@@ -33,6 +33,7 @@ object ClientConnectionActor {
 
     Flow.fromSinkAndSourceMat(inbound, outbound)((_, outboundMat) => {
       browserConnections ::= outboundMat.offer
+      controller ! ControlActor.RequestMap()
       NotUsed
     })
   }

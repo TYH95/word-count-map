@@ -39,7 +39,6 @@ object GatherPostActor extends BaseSourceActor {
       implicit val executionContext = system.executionContext
 
       Behaviors.receiveMessage { case GatherPost(replyTo) =>
-        println("GatherPost")
         var req: HttpRequest = Get(POST_URL)
         val responseFuture: Future[HttpResponse] = Http().singleRequest(req)
 
@@ -57,14 +56,12 @@ object GatherPostActor extends BaseSourceActor {
 
                 case posts: Array[WpPost] =>
                   replyTo ! ReplyWithPost(posts)
-                  println("success")
               }
 
             }
 
           case Failure(_) =>
             println(responseFuture)
-          // Here your code if there is not a response
 
         }
         Behaviors.same

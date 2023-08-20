@@ -20,15 +20,22 @@ object ControlActor {
   final case class ReceiveWordCountMap(wcm: Map[String, Int])
       extends ControlCommand
 
+  final case class RequestMap() extends ControlCommand
+
   private case object Interval extends ControlCommand
 
-  private val FETCH_INTERVAL = 30.second
+  //Simple Stateholding of previous wordCountMap
+  private var wordCountMapState: Map[String, Int] = Map[String, Int]()
 
-  private var deliverer: ActorRef[ClientConnectionActor.ConnectionCommand] = null
+  private val FETCH_INTERVAL: FiniteDuration = 30.second
+
+  private var deliverer: ActorRef[ClientConnectionActor.ConnectionCommand] =
+    null
 
   private var gatherer: ActorRef[GatherPostActor.SourceCommand] = null
 
-  private var wordCountMapActor: ActorRef[WordcountMapActor.WordcountMapCommand] = null
+  private var wordCountMapActor
+      : ActorRef[WordcountMapActor.WordcountMapCommand] = null
 
   def apply(): Behavior[ControlCommand] =
     Behaviors.setup { context =>
@@ -56,13 +63,23 @@ object ControlActor {
     Behaviors.withTimers[ControlCommand] { timers =>
 
       timers.startSingleTimer(Interval, FETCH_INTERVAL)
+      wordCountMapActor ! WordcountMapActor.GetWordcountMap()
       Behaviors.receiveMessagePartial {
         case Interval =>
           wordCountMapActor ! WordcountMapActor.GetWordcountMap()
           Behaviors.same
         case ReceiveWordCountMap(wcm) =>
-          deliverer ! ClientConnectionActor.sendMessage(mapToJson(wcm))
+          if (wordCountMapState.isEmpty || !wcm.equals(wordCountMapState))
+            wordCountMapState = wcm
+            deliverer ! ClientConnectionActor.sendMessage(
+              mapToJson(wordCountMapState)
+            )
           inInterval()
+        case RequestMap() =>
+          deliverer ! ClientConnectionActor.sendMessage(
+            mapToJson(wordCountMapState)
+          )
+          Behaviors.same
         case Stop() =>
           idle()
       }
