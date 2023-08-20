@@ -54,6 +54,7 @@ object ControlActor {
 
   private def idle(): Behavior[ControlCommand] = Behaviors.receiveMessage {
     case Start() =>
+      wordCountMapActor ! WordcountMapActor.GetWordcountMap()
       inInterval()
     case _ =>
       Behaviors.unhandled
@@ -63,7 +64,6 @@ object ControlActor {
     Behaviors.withTimers[ControlCommand] { timers =>
 
       timers.startSingleTimer(Interval, FETCH_INTERVAL)
-      wordCountMapActor ! WordcountMapActor.GetWordcountMap()
       Behaviors.receiveMessagePartial {
         case Interval =>
           wordCountMapActor ! WordcountMapActor.GetWordcountMap()

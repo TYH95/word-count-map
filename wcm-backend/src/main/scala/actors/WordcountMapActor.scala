@@ -15,7 +15,11 @@ trait WordCountMap {
   // Remove all HTML Tags from given String
   // TODO: Find better solution then regex
   def stripHtmlTags(str: String): String = {
-    return str.replaceAll("(<([^>]+)>)", "").replaceAll("\\s+", " ").trim()
+    return str.replaceAll("(<([^>]+)>)", " ").replaceAll("""(&[\p{Digit}];)""", "").replaceAll("\\s+", " ").trim()
+  }
+
+  def removePunctuation(str: String): String = {
+    return str.replaceAll("""[\p{Punct}&&[^-]]""", "").replaceAll("""[”“]""", "").trim()
   }
 
   // Counts each word in the post contents and returns the result als Map
@@ -24,8 +28,8 @@ trait WordCountMap {
 
     posts.foreach[WpPost] { post =>
       // Get rid of HTML tags
-      val sanatizedContent = this.stripHtmlTags(post.content.rendered)
-
+      var sanatizedContent: String = this.stripHtmlTags(post.content.rendered)
+      sanatizedContent = this.removePunctuation(sanatizedContent)
       // Count Words in String
       val wordCountMap: MapView[String, Int] =
         sanatizedContent
